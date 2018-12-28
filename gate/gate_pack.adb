@@ -31,13 +31,15 @@ package body Gate_Pack is
     Bind_Socket (Server, Address);
     Listen_Socket (Server);  -- czekamy na sockecie
     Put_Line ( "Kontroler: czekam na Sensor ....");
-    Accept_Socket (Server, Socket, Address);
-    Channel := Stream (Socket); -- uchwyt do kanalu 
     loop
+      Accept_Socket (Server, Socket, Address);
+      Channel := Stream (Socket); -- uchwyt do kanalu 
       Dane := Float'Input (Channel);
       Put_Line ("Kontroler: -> dane =" & Dane'Img);
       --  Komunikat do: Sensor
       String'Output (Channel, "OK: " & Dane'Img);
+      -- wywolac entry ????
+      Close_Socket(Socket);
     end loop;
   exception
     when E:others => Put_Line("Error: Zadanie Gate_Control");
