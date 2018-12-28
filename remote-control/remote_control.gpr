@@ -1,0 +1,17 @@
+project Remote_Control is
+
+   package Linker is
+      for Default_Switches ("ada") use ("-g");
+   end Linker;
+
+   package Builder is
+      for Default_Switches ("ada") use ("-g");
+   end Builder;
+
+   package Compiler is
+      for Default_Switches ("ada") use ("-g");
+   end Compiler;
+
+   for Main use ("remote.adb");
+
+end Remote_Control;
