@@ -12,7 +12,7 @@ project Gate_Controller is
       for Default_Switches ("ada") use ("-g");
    end Compiler;
 
-   for Main use ("gate.adb");
+   for Main use ("gate_panel.adb");
 
 end Gate_Controller;
 

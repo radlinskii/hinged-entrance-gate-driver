@@ -32,7 +32,7 @@ package body Remote_Pack is
     delay until Nastepny;
     Channel := Stream (Socket);
     Put_Line("Sensor: -> wysyłam dane ...");
-    Float'Output (Channel, Random(G) );
+    Integer'Output (Channel, 1 );
     Put_Line ("Sensor: <-" & String'Input (Channel));
     Nastepny := Nastepny + Okres;
     --end loop;
