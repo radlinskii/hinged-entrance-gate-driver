@@ -7,6 +7,7 @@ procedure Remote is
   pragma Priority (System.Priority'First);
 begin
   Put_Line("Remote: początek");
+  --panel
   loop
     null;
   end loop;

@@ -27,15 +27,15 @@ package body Remote_Pack is
     Create_Socket (Socket);
     Set_Socket_Option (Socket, Socket_Level, (Reuse_Address, True));
     Connect_Socket (Socket, Address);
-    loop
-      Put_Line("Sensor: czekam okres ...");
-      delay until Nastepny;
-      Channel := Stream (Socket);
-      Put_Line("Sensor: -> wysyłam dane ...");
-      Float'Output (Channel, Random(G) );
-      Put_Line ("Sensor: <-" & String'Input (Channel));
-      Nastepny := Nastepny + Okres;
-    end loop;
+    --loop
+    Put_Line("Sensor: czekam okres ...");
+    delay until Nastepny;
+    Channel := Stream (Socket);
+    Put_Line("Sensor: -> wysyłam dane ...");
+    Float'Output (Channel, Random(G) );
+    Put_Line ("Sensor: <-" & String'Input (Channel));
+    Nastepny := Nastepny + Okres;
+    --end loop;
   exception
     when E:others =>
       Close_Socket (Socket);
