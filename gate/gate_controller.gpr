@@ -1,0 +1,18 @@
+project Gate_Controller is
+
+   package Linker is
+      for Default_Switches ("ada") use ("-g");
+   end Linker;
+
+   package Builder is
+      for Default_Switches ("ada") use ("-g");
+   end Builder;
+
+   package Compiler is
+      for Default_Switches ("ada") use ("-g");
+   end Compiler;
+
+   for Main use ("gate.adb");
+
+end Gate_Controller;
+
