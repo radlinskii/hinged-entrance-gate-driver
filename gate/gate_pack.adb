@@ -8,46 +8,43 @@ with GNAT.Sockets;
 use GNAT.Sockets;
 
 package body Gate_Pack is
-
-  Paused_Counter : Integer := 10 with Atomic; -- TODO
-
   task body Signal_Controller is
   Gate_State : State;
   begin
     loop
       select
         accept Remote_Signal;
-        Put_Line("Signal_Controller.Remote_Signal");
+        -- Put_Line("Signal_Controller.Remote_Signal");
         Gate.Get_State(Gate_State);
         case Gate_State is
           when Opened =>
-            Put_Line("Opened state");
+            -- Put_Line("Opened state");
             Gate.Set_State(Closing);
             Gate_Controller.Close_Gate;
           when Closed =>
-            Put_Line("Closed state");
+            -- Put_Line("Closed state");
             Gate.Set_State(Opening);
             Gate_Controller.Open_Gate;
           when Closing =>
-            Put_Line("Closing state");
+            -- Put_Line("Closing state");
             Gate.Set_State(Closing_Paused);
             Pause_Gate_Controller.Closing_Paused;
           when Opening =>
-            Put_Line("Opening state");
+            -- Put_Line("Opening state");
             Gate.Set_State(Opening_Paused);
             Pause_Gate_Controller.Opening_Paused;
           when Opening_Paused =>
-            Put_Line("Paused opening state");
+            -- Put_Line("Paused opening state");
             Gate.Set_State(Closing);
             Gate_Controller.Close_Gate;
           when Closing_Paused =>
-            Put_Line("Paused closing state");
+            -- Put_Line("Paused closing state");
             Gate.Set_State(Opening);
             Gate_Controller.Open_Gate;
         end case;
       or
         accept Photocell_Signal;
-        Put_Line("Signal_Controller.Photocell_Signal");
+        -- Put_Line("Signal_Controller.Photocell_Signal");
         Gate.Get_State(Gate_State);
         if Gate_State = Closing then
           Gate.Set_State(Opening);
@@ -69,20 +66,20 @@ package body Gate_Pack is
     Gate_State : State;
   begin
     Gate.Get_State(Gate_State);
-    Address.Addr := Inet_Addr("192.168.8.109");
+    Address.Addr := Inet_Addr("192.168.8.113");
     Address.Port := 5876;
-    Put_Line("Host: "&Host_Name);
-    Put_Line("Adres:port = ("&Image(Address)&")");
+    -- Put_Line("Host: "&Host_Name);
+    -- Put_Line("Adres:port = ("&Image(Address)&")");
     Create_Socket (Server);
     Set_Socket_Option (Server, Socket_Level, (Reuse_Address, True));
     Bind_Socket (Server, Address);
     Listen_Socket (Server);
-    Put_Line ( "Kontroler: czekam na Sensor ....");
+    -- Put_Line ( "Kontroler: czekam na Sensor ....");
     loop
       Accept_Socket (Server, Socket, Address);
       Channel := Stream (Socket);
       Dane := Integer'Input (Channel);
-      Put_Line ("Kontroler: -> dane =" & Dane'Img);
+      -- Put_Line ("Kontroler: -> dane =" & Dane'Img);
       if Dane = 1 then
         Signal_Controller.Remote_Signal;
       elsif Dane = 0 then
@@ -99,6 +96,7 @@ package body Gate_Pack is
     procedure Set_State(S : in State) is
     begin
       Gate_State := S;
+      -- Put_Line("new state: " & Gate_State'Img);
     end Set_State;
 
     procedure Get_State(S : out State) is
@@ -106,20 +104,22 @@ package body Gate_Pack is
       S := Gate_State;
     end Get_State;
 
-    procedure Change_Axis(Add : Boolean; Axis : Integer) is
+
+    procedure Get_Axis(A : out Integer) is
     begin
-      if Add then
-        Left_Axis := Left_Axis + Axis;
-      else
-        Left_Axis := Left_Axis - Axis;
-      end if;
-    end Change_Axis;
+      A := Axis;
+    end Get_Axis;
+
+    procedure Set_Axis(A : in Integer) is
+    begin
+      Axis := A;
+    end Set_Axis;
   end Gate;
 
   task body Gate_Controller is
     Next : Ada.Calendar.Time;
-    Shift : constant Duration := 0.5; -- TODO
-    Iter : Integer := 10; -- TODO
+    Shift : constant Duration := Duration ( Float (Opening_Duration_In_Sec) / Float (Axis_Max)); -- TODO
+    Iter : Natural; -- TODO
     S : State;
   begin
     loop
@@ -128,12 +128,13 @@ package body Gate_Pack is
         Next := Clock + Shift;
         loop
           delay until Next;
-          Put_Line("iter " & Iter'Img);
+          -- Put_Line("iter " & Iter'Img);
           Gate.Get_State(S);
-          Put_Line("state " & S'Img);
+          Gate.Get_Axis(Iter);
+          -- Put_Line("state " & S'Img);
           Next := Next + Shift;
-          Iter := Iter - 1;
-          if Iter <= 0 then
+          Gate.Set_Axis(Iter + 1);
+          if Iter >= Axis_Max then
             Gate.Set_State(Opened);
             Pause_Gate_Controller.Opened_Pause;
             exit;
@@ -146,12 +147,13 @@ package body Gate_Pack is
         Next := Clock + Shift;
         loop
           delay until Next;
-          Put_Line("iter " & Iter'Img);
+          -- Put_Line("iter " & Iter'Img);
           Gate.Get_State(S);
-          Put_Line("state " & S'Img);
+          Gate.Get_Axis(Iter);
+          -- Put_Line("state " & S'Img);
           Next := Next + Shift;
-          Iter := Iter + 1;
-          if Iter >= 10 then -- TODO
+          Gate.Set_Axis(Iter - 1);
+          if Iter <= 1 then -- TODO
             Gate.Set_State(Closed);
             exit;
           elsif S = Closing_Paused or S = Opening then
@@ -176,8 +178,8 @@ package body Gate_Pack is
         loop
           delay until Next;
           Gate.Get_State(S);
-          Put_Line("iter " & Paused_Counter'Img);
-          Put_Line("state " & S'Img);
+          -- Put_Line("iter " & Paused_Counter'Img);
+          -- Put_Line("state " & S'Img);
           Next := Next + Shift;
           Paused_Counter := Paused_Counter - 1;
           if Paused_Counter <= 0 then
@@ -193,8 +195,8 @@ package body Gate_Pack is
         loop
           delay until Next;
           Gate.Get_State(S);
-          Put_Line("iter " & Paused_Counter'Img);
-          Put_Line("state " & S'Img);
+          -- Put_Line("iter " & Paused_Counter'Img);
+          -- Put_Line("state " & S'Img);
           Next := Next + Shift;
           Paused_Counter := Paused_Counter - 1;
           if Paused_Counter <= 0 then
@@ -212,8 +214,8 @@ package body Gate_Pack is
         loop
           delay until Next;
           Gate.Get_State(S);
-          Put_Line("iter " & Paused_Counter'Img);
-          Put_Line("state " & S'Img);
+          -- Put_Line("iter " & Paused_Counter'Img);
+          -- Put_Line("state " & S'Img);
           Next := Next + Shift;
           Paused_Counter := Paused_Counter - 1;
           if Paused_Counter <= 0 or S = Closing then
