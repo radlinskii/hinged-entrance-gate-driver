@@ -21,7 +21,7 @@ package body Gate_Pack is
             when Opened =>
               Put_Line("Opened state");
               Gate_Controller.Close_Gate;
-              Gate.Set_State(Closing);
+              Gate.Set_State(Closing); -- kolejnosc taka jest ok?????
             when Closed =>
               Put_Line("Closed state");
               Gate_Controller.Open_Gate;
@@ -36,8 +36,12 @@ package body Gate_Pack is
               Pause_Gate_Controller.Opening_Paused;
             when Opening_Paused =>
               Put_Line("Paused opening state");
+              Gate.Set_State(Closing);
+              Gate_Controller.Close_Gate;
             when Closing_Paused =>
               Put_Line("Paused closing state");
+              Gate.Set_State(Opening);
+              Gate_Controller.Open_Gate;
           end case;
         or
           accept Photocell_Signal;
@@ -192,9 +196,10 @@ package body Gate_Pack is
             Next := Next + Shift;
             Paused_Counter := Paused_Counter - 1;
             if Paused_Counter <= 0 then -- time's up time to close again
-              Put_Line("set state Closing");
               Gate.Set_State(Closing);
               Gate_Controller.Close_Gate;
+              exit;
+            elsif S = Opening then
               exit;
             end if;
           end loop;
@@ -210,7 +215,7 @@ package body Gate_Pack is
             Put_Line("state " & S'Img);
             Next := Next + Shift;
             Paused_Counter := Paused_Counter - 1;
-            if Paused_Counter <= 0 then -- time's up time to close again
+            if Paused_Counter <= 0 or S = Closing then -- time's up time to close again
               Put_Line("set state Closing");
               Gate.Set_State(Closing);
               Gate_Controller.Close_Gate;
