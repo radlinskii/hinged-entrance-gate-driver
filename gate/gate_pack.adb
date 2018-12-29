@@ -161,6 +161,7 @@ package body Gate_Pack is
   Next : Ada.Calendar.Time;
   Shift : constant Duration := 0.5;
   Paused_Counter : Integer;
+  Duration_Of_Pause : Integer := 10; -- todo make this a parameter of the task
   S : State;
   begin
     loop
@@ -168,7 +169,7 @@ package body Gate_Pack is
       accept Opened_Pause;
       Put_Line("Opened Pause");
       Next := Clock + Shift;
-      Paused_Counter := 10; -- todo: change 10 to a variable
+      Paused_Counter := Duration_Of_Pause;
       loop
         delay until Next;
         Gate.Get_State(S);
@@ -187,7 +188,7 @@ package body Gate_Pack is
       accept Closing_Paused;
           Put_Line("Closing Paused");
           Next := Clock + Shift;
-          Paused_Counter := 10;
+          Paused_Counter := Duration_Of_Pause;
           loop
             delay until Next;
             Gate.Get_State(S);
@@ -207,7 +208,7 @@ package body Gate_Pack is
         accept Opening_Paused;
           Put_Line("Opening Paused");
           Next := Clock + Shift;
-          Paused_Counter := 10;
+          Paused_Counter := Duration_Of_Pause;
           loop
             delay until Next;
             Gate.Get_State(S);
