@@ -1,0 +1,17 @@
+project Photocell_Control is
+
+   package Linker is
+      for Default_Switches ("ada") use ("-g");
+   end Linker;
+
+   package Builder is
+      for Default_Switches ("ada") use ("-g");
+   end Builder;
+
+   package Compiler is
+      for Default_Switches ("ada") use ("-g");
+   end Compiler;
+
+   for Main use ("photocell.adb");
+
+end Photocell_Control;
