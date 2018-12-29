@@ -2,8 +2,10 @@ with System;
 
 package Remote_Pack is
 
-  task Remote is
+  task Remote_Task is
     pragma Priority(System.Default_Priority);
-  end Remote;
+    entry  Send_Signal;
+    entry Quit;
+  end Remote_Task;
 
 end Remote_Pack;

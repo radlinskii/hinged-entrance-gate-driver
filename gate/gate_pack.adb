@@ -46,8 +46,6 @@ package body Gate_Pack is
       Channel := Stream (Socket); -- uchwyt do kanalu 
       Dane := Integer'Input (Channel);
       Put_Line ("Kontroler: -> dane =" & Dane'Img);
-      --  Komunikat do: Sensor
-      String'Output (Channel, "OK: " & Dane'Img);
       if Dane = 1 then
         Signal_Controller.Remote_Signal;
       end if;
