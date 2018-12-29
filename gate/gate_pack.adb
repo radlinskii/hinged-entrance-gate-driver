@@ -12,22 +12,32 @@ package body Gate_Pack is
   task body Signal_Controller is
   Gate_State : State;
   begin
-      Gate.Get_State(Gate_State);
       loop
         select
           accept Remote_Signal;
-            Gate.Remote_Signal; -- zmiana state gate protexted obiektu TODO
+          Gate.Get_State(Gate_State);
+          Put_Line("Signal_Controller.Remote_Signal");
           case Gate_State is
-            when Closed => Put_Line("Closed state");
-                          Gate_Controller.Open_Gate;
-            when Opened => Put_Line("Closed state");
-            when Closing => Put_Line("Closing state");
-            when Opening => Put_Line("Opening state");
-            when Opening_Paused => Put_Line("Paused opening state");
-            when Closing_Paused => Put_Line("Paused closing state");
+            when Opened =>
+              Put_Line("Opened state");
+              Gate_Controller.Close_Gate;
+              Gate.Set_State(Closing);
+            when Closed =>
+              Put_Line("Closed state");
+              Gate_Controller.Open_Gate;
+              Gate.Set_State(Opening);
+            when Closing =>
+              Put_Line("Closing state");
+            when Opening =>
+              Put_Line("Opening state");
+            when Opening_Paused =>
+              Put_Line("Paused opening state");
+            when Closing_Paused =>
+              Put_Line("Paused closing state");
           end case;
         or
           accept Photocell_Signal;
+          Gate.Get_State(Gate_State);
           Put_Line("Photocell");
         end select;
       end loop;
@@ -42,22 +52,18 @@ package body Gate_Pack is
     Gate_State : State;
   begin
     Gate.Get_State(Gate_State);
-    --Address.Addr := Addresses (Get_Host_By_Name (Host_Name), 1);
-    --Address.Addr := Addresses (Get_Host_By_Address(Inet_Addr("10.0.0.1")),1);
     Address.Addr := Inet_Addr("192.168.8.109");
-    --Address.Addr := Addresses (Get_Host_By_Name ("imac.local"), 1);
-    --Address.Addr := Addresses (Get_Host_By_Name ("localhost"), 1);
     Address.Port := 5876;
     Put_Line("Host: "&Host_Name);
     Put_Line("Adres:port = ("&Image(Address)&")");
     Create_Socket (Server);
     Set_Socket_Option (Server, Socket_Level, (Reuse_Address, True));
     Bind_Socket (Server, Address);
-    Listen_Socket (Server);  -- czekamy na sockecie
+    Listen_Socket (Server);
     Put_Line ( "Kontroler: czekam na Sensor ....");
     loop
       Accept_Socket (Server, Socket, Address);
-      Channel := Stream (Socket); -- uchwyt do kanalu
+      Channel := Stream (Socket);
       Dane := Integer'Input (Channel);
       Put_Line ("Kontroler: -> dane =" & Dane'Img);
       if Dane = 1 then
@@ -71,15 +77,11 @@ package body Gate_Pack is
   end Gate_Control;
 
   protected body Gate is
-    procedure Remote_Signal is
+    procedure Set_State(S : in State) is
     begin
-      Put_Line("Remote");
-    end Remote_Signal;
-
-    procedure Photocell_Signal is
-    begin
-      Put_Line("Photocell");
-    end Photocell_Signal;
+      Gate_State := S;
+      Put_Line(Gate_State'Img);
+    end Set_State;
 
     procedure Get_State(S : out State) is
     begin
@@ -99,7 +101,8 @@ package body Gate_Pack is
   task body Gate_Controller is
     Next : Ada.Calendar.Time;
     Shift : constant Duration := 0.5;
-    Iter : Integer := 10; -- 5 sekund sie otwiera brama - TODO: zrobic jako zmienna zadania begin
+    Iter : Integer := 10; -- 5 seconds - TODO: set it to variable
+    S : State;
     begin
       loop
         select
@@ -107,14 +110,40 @@ package body Gate_Pack is
           Next := Clock + Shift;
           loop
             delay until Next;
-            Put_Line("I otwiera");
-            exit when Iter = 0;  -- TODO: or gate state is not opening
+            -- Put_Line("I otwiera");
+            Put_Line("iter " & Iter'Img);
+            Gate.Get_State(S);
+            Put_Line("state " & S'Img);
             Next := Next + Shift;
             Iter := Iter - 1;
+            if Iter <= 0 then
+              Put_Line("set state opened");
+              Gate.Set_State(Opened);
+            end if;
+            if Iter <= 0 or S /= Opening then
+              Put_Line("EXIT Open_Gate");
+              exit;
+            end if;
           end loop;
         or
          accept Close_Gate;
-          Put_Line("i zamyka");
+          Next := Clock + Shift;
+          loop
+            delay until Next;
+            Put_Line("iter " & Iter'Img);
+            Gate.Get_State(S);
+            Put_Line("state " & S'Img);
+            Next := Next + Shift;
+            Iter := Iter + 1;
+            if Iter >= 10 then
+              Put_Line("set state Closed");
+              Gate.Set_State(Closed);
+            end if;
+            if Iter >= 10 or S /= Closing then
+              Put_Line("EXIT Close_Gate");
+              exit;
+            end if;
+          end loop;
         end select;
       end loop;
   end Gate_Controller;

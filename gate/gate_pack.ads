@@ -7,9 +7,8 @@ package Gate_Pack is
   task Gate_Control;
 
   protected Gate is
-    procedure Remote_Signal;
-    procedure Photocell_Signal;
     procedure Get_State(S : out State);
+    procedure Set_State(S : in State);
     procedure Change_Axis(Add : Boolean; Axis : Integer);
     private
       Gate_State : State := Closed;
