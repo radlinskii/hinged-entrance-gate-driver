@@ -2,6 +2,12 @@ with System;
 
 package Gate_Pack is
 
+  Axis_Max : Natural := 90;
+
+  Paused_Counter : Integer := 10 with Atomic; -- TODO
+
+  Opening_Duration_In_Sec : Natural := 8;
+
   type State is (Closed, Opened, Closing, Opening, Closing_Paused, Opening_Paused);
 
   task Gate_Control;
@@ -9,11 +15,13 @@ package Gate_Pack is
   protected Gate is
     procedure Get_State(S : out State);
     procedure Set_State(S : in State);
-    procedure Change_Axis(Add : Boolean; Axis : Integer);
+
+    procedure Get_Axis(A : out Integer);
+    procedure Set_Axis(A : in Integer);
+
     private
       Gate_State : State := Closed;
-      Left_Axis : Integer;
-      Right_Axis : Integer;
+      Axis : Natural := 0;
   end Gate;
 
   task Signal_Controller is
