@@ -9,6 +9,8 @@ use GNAT.Sockets;
 
 package body Gate_Pack is
 
+  Paused_Counter : Integer := 10 with Atomic;
+
   task body Signal_Controller is
   Gate_State : State;
   begin
@@ -20,12 +22,12 @@ package body Gate_Pack is
           case Gate_State is
             when Opened =>
               Put_Line("Opened state");
+              Gate.Set_State(Closing); 
               Gate_Controller.Close_Gate;
-              Gate.Set_State(Closing); -- kolejnosc taka jest ok?????
             when Closed =>
               Put_Line("Closed state");
-              Gate_Controller.Open_Gate;
               Gate.Set_State(Opening);
+              Gate_Controller.Open_Gate;
             when Closing =>
               Put_Line("Closing state");
               Gate.Set_State(Closing_Paused);
@@ -46,6 +48,13 @@ package body Gate_Pack is
         or
           accept Photocell_Signal;
           Gate.Get_State(Gate_State);
+          if Gate_State = Closing then
+            Gate.Set_State(Opening);
+            Gate_Controller.Open_Gate;
+          elsif Gate_State = Opened then
+            Gate.Set_State(Opened);
+            Paused_Counter := 10; -- TODO: change to a variable
+          end if;
           Put_Line("Photocell");
         end select;
       end loop;
@@ -76,6 +85,8 @@ package body Gate_Pack is
       Put_Line ("Kontroler: -> dane =" & Dane'Img);
       if Dane = 1 then
         Signal_Controller.Remote_Signal;
+      elsif Dane = 0 then
+        Signal_Controller.Photocell_Signal;
       end if;
       Close_Socket(Socket);
     end loop;
@@ -125,12 +136,10 @@ package body Gate_Pack is
             Next := Next + Shift;
             Iter := Iter - 1;
             if Iter <= 0 then
-              Put_Line("set state opened");
               Gate.Set_State(Opened);
               Pause_Gate_Controller.Opened_Pause;
               exit;
             elsif S = Opening_Paused then
-              Put_Line("EXIT Open_Gate");
               exit;
             end if;
           end loop;
@@ -145,11 +154,9 @@ package body Gate_Pack is
             Next := Next + Shift;
             Iter := Iter + 1;
             if Iter >= 10 then -- gate closed
-              Put_Line("set state Closed");
               Gate.Set_State(Closed);
               exit;
-            elsif S = Closing_Paused then -- closing_paused
-              Put_Line("State is closing paused");
+            elsif S = Closing_Paused or S = Opening then
               exit;
             end if;
           end loop;
@@ -160,7 +167,6 @@ package body Gate_Pack is
   task body Pause_Gate_Controller is
   Next : Ada.Calendar.Time;
   Shift : constant Duration := 0.5;
-  Paused_Counter : Integer;
   Duration_Of_Pause : Integer := 10; -- todo make this a parameter of the task
   S : State;
   begin
