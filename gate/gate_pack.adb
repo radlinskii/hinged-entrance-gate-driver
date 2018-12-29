@@ -28,6 +28,8 @@ package body Gate_Pack is
               Gate.Set_State(Opening);
             when Closing =>
               Put_Line("Closing state");
+              Gate.Set_State(Closing_Paused);
+              Pause_Gate_Controller.Closing_Pause;
             when Opening =>
               Put_Line("Opening state");
             when Opening_Paused =>
@@ -52,7 +54,7 @@ package body Gate_Pack is
     Gate_State : State;
   begin
     Gate.Get_State(Gate_State);
-    Address.Addr := Inet_Addr("192.168.8.109");
+    Address.Addr := Inet_Addr("192.168.8.113");
     Address.Port := 5876;
     Put_Line("Host: "&Host_Name);
     Put_Line("Adres:port = ("&Image(Address)&")");
@@ -135,18 +137,48 @@ package body Gate_Pack is
             Put_Line("state " & S'Img);
             Next := Next + Shift;
             Iter := Iter + 1;
-            if Iter >= 10 then
+            if Iter >= 10 then -- gate closed
               Put_Line("set state Closed");
               Gate.Set_State(Closed);
-            end if;
-            if Iter >= 10 or S /= Closing then
-              Put_Line("EXIT Close_Gate");
+              exit;
+            elsif S = Closing_Paused then -- closing_paused
+              Put_Line("State is closing paused");
               exit;
             end if;
           end loop;
         end select;
       end loop;
   end Gate_Controller;
+
+  task body Pause_Gate_Controller is
+  Next : Ada.Calendar.Time;
+  Shift : constant Duration := 0.5;
+  Paused_Counter : Integer;
+  S : State;
+  begin
+    loop
+    select
+      accept Closing_Pause;
+          Put_Line("Closing Paused");
+          Next := Clock + Shift;
+          Paused_Counter := 10;
+          loop
+            delay until Next;
+            Gate.Get_State(S);
+            Put_Line("iter " & Paused_Counter'Img);
+            Put_Line("state " & S'Img);
+            Next := Next + Shift;
+            Paused_Counter := Paused_Counter - 1;
+            if Paused_Counter <= 0 then -- time's up time to close again
+              Put_Line("set state Closing");
+              Gate.Set_State(Closing);
+              Gate_Controller.Close_Gate;
+              exit;
+            end if;
+          end loop;
+        end select;
+      end loop;
+  end Pause_Gate_Controller;
 
 
 end Gate_Pack;
