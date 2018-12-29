@@ -32,7 +32,7 @@ package body Remote_Pack is
   exception
     when E:others =>
       Close_Socket (Socket);
-      Put_Line("Error: Zadanie Sensor");
+      Put_Line("Error: Task Remote Controller");
       Put_Line(Exception_Name (E) & ": " & Exception_Message (E));
   end Remote_Task;
 
