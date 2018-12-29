@@ -6,9 +6,9 @@ with GNAT.Sockets; use GNAT.Sockets;
 with Ada.Calendar;
 use Ada.Calendar;
 
-package body Remote_Pack is
+package body Photocell_Pack is
 
-  task body Remote_Task is
+  task body Photocell_Task is
     Address : Sock_Addr_Type;
     Socket  : Socket_Type;
     Channel : Stream_Access;
@@ -22,7 +22,7 @@ package body Remote_Pack is
         Set_Socket_Option (Socket, Socket_Level, (Reuse_Address, True));
         Connect_Socket (Socket, Address);
         Channel := Stream (Socket);
-        Integer'Output (Channel, 1 );
+        Integer'Output (Channel, 0);
         Close_Socket(Socket);
       or 
         accept Quit;
@@ -32,8 +32,8 @@ package body Remote_Pack is
   exception
     when E:others =>
       Close_Socket (Socket);
-      Put_Line("Error: Zadanie Sensor");
+      Put_Line("Error: Task Photocell");
       Put_Line(Exception_Name (E) & ": " & Exception_Message (E));
-  end Remote_Task;
+  end Photocell_Task;
 
-end Remote_Pack;
+end Photocell_Pack;
