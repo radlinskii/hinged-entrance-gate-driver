@@ -9,55 +9,55 @@ use GNAT.Sockets;
 
 package body Gate_Pack is
 
-  Paused_Counter : Integer := 10 with Atomic;
+  Paused_Counter : Integer := 10 with Atomic; -- TODO
 
   task body Signal_Controller is
   Gate_State : State;
   begin
-      loop
-        select
-          accept Remote_Signal;
-          Gate.Get_State(Gate_State);
-          Put_Line("Signal_Controller.Remote_Signal");
-          case Gate_State is
-            when Opened =>
-              Put_Line("Opened state");
-              Gate.Set_State(Closing); 
-              Gate_Controller.Close_Gate;
-            when Closed =>
-              Put_Line("Closed state");
-              Gate.Set_State(Opening);
-              Gate_Controller.Open_Gate;
-            when Closing =>
-              Put_Line("Closing state");
-              Gate.Set_State(Closing_Paused);
-              Pause_Gate_Controller.Closing_Paused;
-            when Opening =>
-              Put_Line("Opening state");
-              Gate.Set_State(Opening_Paused);
-              Pause_Gate_Controller.Opening_Paused;
-            when Opening_Paused =>
-              Put_Line("Paused opening state");
-              Gate.Set_State(Closing);
-              Gate_Controller.Close_Gate;
-            when Closing_Paused =>
-              Put_Line("Paused closing state");
-              Gate.Set_State(Opening);
-              Gate_Controller.Open_Gate;
-          end case;
-        or
-          accept Photocell_Signal;
-          Gate.Get_State(Gate_State);
-          if Gate_State = Closing then
+    loop
+      select
+        accept Remote_Signal;
+        Put_Line("Signal_Controller.Remote_Signal");
+        Gate.Get_State(Gate_State);
+        case Gate_State is
+          when Opened =>
+            Put_Line("Opened state");
+            Gate.Set_State(Closing);
+            Gate_Controller.Close_Gate;
+          when Closed =>
+            Put_Line("Closed state");
             Gate.Set_State(Opening);
             Gate_Controller.Open_Gate;
-          elsif Gate_State = Opened then
-            Gate.Set_State(Opened);
-            Paused_Counter := 10; -- TODO: change to a variable
-          end if;
-          Put_Line("Photocell");
-        end select;
-      end loop;
+          when Closing =>
+            Put_Line("Closing state");
+            Gate.Set_State(Closing_Paused);
+            Pause_Gate_Controller.Closing_Paused;
+          when Opening =>
+            Put_Line("Opening state");
+            Gate.Set_State(Opening_Paused);
+            Pause_Gate_Controller.Opening_Paused;
+          when Opening_Paused =>
+            Put_Line("Paused opening state");
+            Gate.Set_State(Closing);
+            Gate_Controller.Close_Gate;
+          when Closing_Paused =>
+            Put_Line("Paused closing state");
+            Gate.Set_State(Opening);
+            Gate_Controller.Open_Gate;
+        end case;
+      or
+        accept Photocell_Signal;
+        Put_Line("Signal_Controller.Photocell_Signal");
+        Gate.Get_State(Gate_State);
+        if Gate_State = Closing then
+          Gate.Set_State(Opening);
+          Gate_Controller.Open_Gate;
+        elsif Gate_State = Opened then
+          Gate.Set_State(Opened);
+          Paused_Counter := 10; -- TODO
+        end if;
+      end select;
+    end loop;
   end Signal_Controller;
 
   task body Gate_Control is
@@ -69,7 +69,7 @@ package body Gate_Pack is
     Gate_State : State;
   begin
     Gate.Get_State(Gate_State);
-    Address.Addr := Inet_Addr("192.168.8.113");
+    Address.Addr := Inet_Addr("192.168.8.109");
     Address.Port := 5876;
     Put_Line("Host: "&Host_Name);
     Put_Line("Adres:port = ("&Image(Address)&")");
@@ -99,7 +99,6 @@ package body Gate_Pack is
     procedure Set_State(S : in State) is
     begin
       Gate_State := S;
-      Put_Line(Gate_State'Img);
     end Set_State;
 
     procedure Get_State(S : out State) is
@@ -119,119 +118,112 @@ package body Gate_Pack is
 
   task body Gate_Controller is
     Next : Ada.Calendar.Time;
-    Shift : constant Duration := 0.5;
-    Iter : Integer := 10; -- 5 seconds - TODO: set it to variable
+    Shift : constant Duration := 0.5; -- TODO
+    Iter : Integer := 10; -- TODO
     S : State;
-    begin
-      loop
-        select
-          accept Open_Gate;
-          Next := Clock + Shift;
-          loop
-            delay until Next;
-            -- Put_Line("I otwiera");
-            Put_Line("iter " & Iter'Img);
-            Gate.Get_State(S);
-            Put_Line("state " & S'Img);
-            Next := Next + Shift;
-            Iter := Iter - 1;
-            if Iter <= 0 then
-              Gate.Set_State(Opened);
-              Pause_Gate_Controller.Opened_Pause;
-              exit;
-            elsif S = Opening_Paused then
-              exit;
-            end if;
-          end loop;
-        or
-         accept Close_Gate;
-          Next := Clock + Shift;
-          loop
-            delay until Next;
-            Put_Line("iter " & Iter'Img);
-            Gate.Get_State(S);
-            Put_Line("state " & S'Img);
-            Next := Next + Shift;
-            Iter := Iter + 1;
-            if Iter >= 10 then -- gate closed
-              Gate.Set_State(Closed);
-              exit;
-            elsif S = Closing_Paused or S = Opening then
-              exit;
-            end if;
-          end loop;
-        end select;
-      end loop;
+  begin
+    loop
+      select
+        accept Open_Gate;
+        Next := Clock + Shift;
+        loop
+          delay until Next;
+          Put_Line("iter " & Iter'Img);
+          Gate.Get_State(S);
+          Put_Line("state " & S'Img);
+          Next := Next + Shift;
+          Iter := Iter - 1;
+          if Iter <= 0 then
+            Gate.Set_State(Opened);
+            Pause_Gate_Controller.Opened_Pause;
+            exit;
+          elsif S = Opening_Paused then
+            exit;
+          end if;
+        end loop;
+      or
+        accept Close_Gate;
+        Next := Clock + Shift;
+        loop
+          delay until Next;
+          Put_Line("iter " & Iter'Img);
+          Gate.Get_State(S);
+          Put_Line("state " & S'Img);
+          Next := Next + Shift;
+          Iter := Iter + 1;
+          if Iter >= 10 then -- TODO
+            Gate.Set_State(Closed);
+            exit;
+          elsif S = Closing_Paused or S = Opening then
+            exit;
+          end if;
+        end loop;
+      end select;
+    end loop;
   end Gate_Controller;
 
   task body Pause_Gate_Controller is
-  Next : Ada.Calendar.Time;
-  Shift : constant Duration := 0.5;
-  Duration_Of_Pause : Integer := 10; -- todo make this a parameter of the task
-  S : State;
+    Next : Ada.Calendar.Time;
+    Shift : constant Duration := 0.5; -- TODO
+    Duration_Of_Pause : Integer := 10; -- TODO
+    S : State;
   begin
     loop
-    select
-      accept Opened_Pause;
-      Put_Line("Opened Pause");
-      Next := Clock + Shift;
-      Paused_Counter := Duration_Of_Pause;
-      loop
-        delay until Next;
-        Gate.Get_State(S);
-        Put_Line("iter " & Paused_Counter'Img);
-        Put_Line("state " & S'Img);
-        Next := Next + Shift;
-        Paused_Counter := Paused_Counter - 1;
-        if Paused_Counter <= 0 then -- time's up time to close again
-          Put_Line("set state Closing");
-          Gate.Set_State(Closing);
-          Gate_Controller.Close_Gate;
-          exit;
-        end if;
-      end loop;
-    or
-      accept Closing_Paused;
-          Put_Line("Closing Paused");
-          Next := Clock + Shift;
-          Paused_Counter := Duration_Of_Pause;
-          loop
-            delay until Next;
-            Gate.Get_State(S);
-            Put_Line("iter " & Paused_Counter'Img);
-            Put_Line("state " & S'Img);
-            Next := Next + Shift;
-            Paused_Counter := Paused_Counter - 1;
-            if Paused_Counter <= 0 then -- time's up time to close again
-              Gate.Set_State(Closing);
-              Gate_Controller.Close_Gate;
-              exit;
-            elsif S = Opening then
-              exit;
-            end if;
-          end loop;
-      or 
+      select
+        accept Opened_Pause;
+        Next := Clock + Shift;
+        Paused_Counter := Duration_Of_Pause;
+        loop
+          delay until Next;
+          Gate.Get_State(S);
+          Put_Line("iter " & Paused_Counter'Img);
+          Put_Line("state " & S'Img);
+          Next := Next + Shift;
+          Paused_Counter := Paused_Counter - 1;
+          if Paused_Counter <= 0 then
+            Gate.Set_State(Closing);
+            Gate_Controller.Close_Gate;
+            exit;
+          end if;
+        end loop;
+      or
+        accept Closing_Paused;
+        Next := Clock + Shift;
+        Paused_Counter := Duration_Of_Pause;
+        loop
+          delay until Next;
+          Gate.Get_State(S);
+          Put_Line("iter " & Paused_Counter'Img);
+          Put_Line("state " & S'Img);
+          Next := Next + Shift;
+          Paused_Counter := Paused_Counter - 1;
+          if Paused_Counter <= 0 then
+            Gate.Set_State(Closing);
+            Gate_Controller.Close_Gate;
+            exit;
+          elsif S = Opening then
+            exit;
+          end if;
+        end loop;
+      or
         accept Opening_Paused;
-          Put_Line("Opening Paused");
-          Next := Clock + Shift;
-          Paused_Counter := Duration_Of_Pause;
-          loop
-            delay until Next;
-            Gate.Get_State(S);
-            Put_Line("iter " & Paused_Counter'Img);
-            Put_Line("state " & S'Img);
-            Next := Next + Shift;
-            Paused_Counter := Paused_Counter - 1;
-            if Paused_Counter <= 0 or S = Closing then -- time's up time to close again
-              Put_Line("set state Closing");
-              Gate.Set_State(Closing);
-              Gate_Controller.Close_Gate;
-              exit;
-            end if;
-          end loop;
-        end select;
-      end loop;
+        Next := Clock + Shift;
+        Paused_Counter := Duration_Of_Pause;
+        loop
+          delay until Next;
+          Gate.Get_State(S);
+          Put_Line("iter " & Paused_Counter'Img);
+          Put_Line("state " & S'Img);
+          Next := Next + Shift;
+          Paused_Counter := Paused_Counter - 1;
+          if Paused_Counter <= 0 or S = Closing then
+            Gate.Set_State(Closing);
+            Gate_Controller.Close_Gate;
+            exit;
+          end if;
+        end loop;
+      end select;
+    end loop;
   end Pause_Gate_Controller;
-
 
 end Gate_Pack;
