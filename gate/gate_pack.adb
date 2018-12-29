@@ -134,7 +134,7 @@ package body Gate_Pack is
           -- Put_Line("state " & S'Img);
           Next := Next + Shift;
           Gate.Set_Axis(Iter + 1);
-          if Iter >= Axis_Max then
+          if Iter >= Axis_Max - 1 then
             Gate.Set_State(Opened);
             Pause_Gate_Controller.Opened_Pause;
             exit;
@@ -166,7 +166,7 @@ package body Gate_Pack is
 
   task body Pause_Gate_Controller is
     Next : Ada.Calendar.Time;
-    Shift : constant Duration := 0.5; -- TODO
+    Shift : constant Duration := 1.0; -- TODO
     Duration_Of_Pause : Integer := 10; -- TODO
     S : State;
   begin

@@ -53,7 +53,8 @@ procedure Gate_Panel is
       Screen.Clear;
       Screen.Print_XY(1,1,"+=========== The Gate ===========+");
       Screen.Print_XY(10, 3, "State: ");
-      Screen.Print_XY(5, 5, "Axis: ");
+      Screen.Print_XY(10, 5, "Axis: ");
+      Screen.Print_XY(10, 7, "Timeout: ");
     end Background; 
 
     procedure Configuration is
@@ -68,7 +69,7 @@ procedure Gate_Panel is
   pragma Priority (System.Priority'First);
   S : State;
   Next : Ada.Calendar.Time;
-  Shift : constant Duration := 0.5;
+  Shift : constant Duration := 1.0;
   Pause_Time : Integer;
   Axis : Natural;
 begin
@@ -77,7 +78,10 @@ begin
   loop 
     Screen.Background; 
     Gate.Get_State(S);
+    Gate.Get_Axis(Axis);
     Screen.Print_XY(17, 3, S'Img, Atryb=>Negatyw);
+    Screen.Print_XY(17, 5, Axis'Img, Atryb=>Jasny);
+    Screen.Print_XY(20, 7, Gate_Pack.Paused_Counter'Img, Atryb=>Podkreslony);
     Next := Clock + Shift;
     delay until Next;
   end loop; 
