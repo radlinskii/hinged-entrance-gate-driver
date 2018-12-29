@@ -29,9 +29,11 @@ package body Gate_Pack is
             when Closing =>
               Put_Line("Closing state");
               Gate.Set_State(Closing_Paused);
-              Pause_Gate_Controller.Closing_Pause;
+              Pause_Gate_Controller.Closing_Paused;
             when Opening =>
               Put_Line("Opening state");
+              Gate.Set_State(Opening_Paused);
+              Pause_Gate_Controller.Opening_Paused;
             when Opening_Paused =>
               Put_Line("Paused opening state");
             when Closing_Paused =>
@@ -121,8 +123,9 @@ package body Gate_Pack is
             if Iter <= 0 then
               Put_Line("set state opened");
               Gate.Set_State(Opened);
-            end if;
-            if Iter <= 0 or S /= Opening then
+              Pause_Gate_Controller.Opened_Pause;
+              exit;
+            elsif S = Opening_Paused then
               Put_Line("EXIT Open_Gate");
               exit;
             end if;
@@ -158,8 +161,46 @@ package body Gate_Pack is
   begin
     loop
     select
-      accept Closing_Pause;
+      accept Opened_Pause;
+      Put_Line("Opened Pause");
+      Next := Clock + Shift;
+      Paused_Counter := 10; -- todo: change 10 to a variable
+      loop
+        delay until Next;
+        Gate.Get_State(S);
+        Put_Line("iter " & Paused_Counter'Img);
+        Put_Line("state " & S'Img);
+        Next := Next + Shift;
+        Paused_Counter := Paused_Counter - 1;
+        if Paused_Counter <= 0 then -- time's up time to close again
+          Put_Line("set state Closing");
+          Gate.Set_State(Closing);
+          Gate_Controller.Close_Gate;
+          exit;
+        end if;
+      end loop;
+    or
+      accept Closing_Paused;
           Put_Line("Closing Paused");
+          Next := Clock + Shift;
+          Paused_Counter := 10;
+          loop
+            delay until Next;
+            Gate.Get_State(S);
+            Put_Line("iter " & Paused_Counter'Img);
+            Put_Line("state " & S'Img);
+            Next := Next + Shift;
+            Paused_Counter := Paused_Counter - 1;
+            if Paused_Counter <= 0 then -- time's up time to close again
+              Put_Line("set state Closing");
+              Gate.Set_State(Closing);
+              Gate_Controller.Close_Gate;
+              exit;
+            end if;
+          end loop;
+      or 
+        accept Opening_Paused;
+          Put_Line("Opening Paused");
           Next := Clock + Shift;
           Paused_Counter := 10;
           loop

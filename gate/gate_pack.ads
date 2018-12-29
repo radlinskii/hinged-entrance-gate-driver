@@ -27,7 +27,9 @@ package Gate_Pack is
   end Gate_Controller;
 
   task Pause_Gate_Controller is
-      entry Closing_Pause;
+    entry Opened_Pause;
+    entry Closing_Paused;
+    entry Opening_Paused;
   end Pause_Gate_Controller;
 
 end Gate_Pack;
