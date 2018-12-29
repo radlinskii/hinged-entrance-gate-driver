@@ -22,4 +22,9 @@ package Gate_Pack is
     entry Photocell_Signal;
   end Signal_Controller;
 
+  task Gate_Controller is
+    entry Open_Gate;
+    entry Close_Gate;
+  end Gate_Controller;
+
 end Gate_Pack;

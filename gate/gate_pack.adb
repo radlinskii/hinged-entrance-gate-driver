@@ -2,17 +2,31 @@ with Ada.Text_IO;
 use  Ada.Text_IO;
 with Ada.Exceptions;
 use Ada.Exceptions;
-with GNAT.Sockets; use GNAT.Sockets;
+with Ada.Calendar;
+use Ada.Calendar;
+with GNAT.Sockets;
+use GNAT.Sockets;
 
 package body Gate_Pack is
 
   task body Signal_Controller is
+  Gate_State : State;
   begin
+      Gate.Get_State(Gate_State);
       loop
         select
           accept Remote_Signal;
-          Put_Line("Remote");
-        or 
+            Gate.Remote_Signal; -- zmiana state gate protexted obiektu TODO
+          case Gate_State is
+            when Closed => Put_Line("Closed state");
+                          Gate_Controller.Open_Gate;
+            when Opened => Put_Line("Closed state");
+            when Closing => Put_Line("Closing state");
+            when Opening => Put_Line("Opening state");
+            when Opening_Paused => Put_Line("Paused opening state");
+            when Closing_Paused => Put_Line("Paused closing state");
+          end case;
+        or
           accept Photocell_Signal;
           Put_Line("Photocell");
         end select;
@@ -30,7 +44,7 @@ package body Gate_Pack is
     Gate.Get_State(Gate_State);
     --Address.Addr := Addresses (Get_Host_By_Name (Host_Name), 1);
     --Address.Addr := Addresses (Get_Host_By_Address(Inet_Addr("10.0.0.1")),1);
-    Address.Addr := Inet_Addr("192.168.8.113");
+    Address.Addr := Inet_Addr("192.168.8.109");
     --Address.Addr := Addresses (Get_Host_By_Name ("imac.local"), 1);
     --Address.Addr := Addresses (Get_Host_By_Name ("localhost"), 1);
     Address.Port := 5876;
@@ -43,7 +57,7 @@ package body Gate_Pack is
     Put_Line ( "Kontroler: czekam na Sensor ....");
     loop
       Accept_Socket (Server, Socket, Address);
-      Channel := Stream (Socket); -- uchwyt do kanalu 
+      Channel := Stream (Socket); -- uchwyt do kanalu
       Dane := Integer'Input (Channel);
       Put_Line ("Kontroler: -> dane =" & Dane'Img);
       if Dane = 1 then
@@ -57,7 +71,7 @@ package body Gate_Pack is
   end Gate_Control;
 
   protected body Gate is
-    procedure Remote_Signal is 
+    procedure Remote_Signal is
     begin
       Put_Line("Remote");
     end Remote_Signal;
@@ -81,4 +95,29 @@ package body Gate_Pack is
       end if;
     end Change_Axis;
   end Gate;
+
+  task body Gate_Controller is
+    Next : Ada.Calendar.Time;
+    Shift : constant Duration := 0.5;
+    Iter : Integer := 10; -- 5 sekund sie otwiera brama - TODO: zrobic jako zmienna zadania begin
+    begin
+      loop
+        select
+          accept Open_Gate;
+          Next := Clock + Shift;
+          loop
+            delay until Next;
+            Put_Line("I otwiera");
+            exit when Iter = 0;  -- TODO: or gate state is not opening
+            Next := Next + Shift;
+            Iter := Iter - 1;
+          end loop;
+        or
+         accept Close_Gate;
+          Put_Line("i zamyka");
+        end select;
+      end loop;
+  end Gate_Controller;
+
+
 end Gate_Pack;
