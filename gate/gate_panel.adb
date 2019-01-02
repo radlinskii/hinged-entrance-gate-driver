@@ -75,6 +75,7 @@ procedure Gate_Panel is
 begin
   Screen.Configuration;
   Ada.Integer_Text_IO.Get(Pause_Time);
+  Gate_Control.Gate_Control_Start(Pause_Time);
   loop 
     Screen.Background; 
     Gate.Get_State(S);

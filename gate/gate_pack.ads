@@ -4,13 +4,16 @@ package Gate_Pack is
 
   Axis_Max : Natural := 90;
 
-  Paused_Counter : Integer := 10 with Atomic; -- TODO
+  Paused_Counter : Integer := 0 with Atomic;
+  Duration_Of_Pause : Integer := 20;
 
   Opening_Duration_In_Sec : Natural := 8;
 
   type State is (Closed, Opened, Closing, Opening, Closing_Paused, Opening_Paused);
 
-  task Gate_Control;
+  task Gate_Control is
+   entry Gate_Control_Start(Pause_Duration : Integer);
+  end Gate_Control;
 
   protected Gate is
     procedure Get_State(S : out State);

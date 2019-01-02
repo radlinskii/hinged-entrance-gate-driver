@@ -51,7 +51,7 @@ package body Gate_Pack is
           Gate_Controller.Open_Gate;
         elsif Gate_State = Opened then
           Gate.Set_State(Opened);
-          Paused_Counter := 10; -- TODO
+          Paused_Counter := Duration_Of_Pause;
         end if;
       end select;
     end loop;
@@ -65,8 +65,13 @@ package body Gate_Pack is
     Dane     : Integer := 0;
     Gate_State : State;
   begin
+    accept Gate_Control_Start(Pause_Duration : Integer) do
+        Duration_Of_Pause := Pause_Duration;
+        Paused_Counter := Pause_Duration;
+    end Gate_Control_Start;
+    -- Put_Line(Duration_Of_Pause'Img);
     Gate.Get_State(Gate_State);
-    Address.Addr := Inet_Addr("192.168.8.113");
+    Address.Addr := Inet_Addr("192.168.1.27");
     Address.Port := 5876;
     -- Put_Line("Host: "&Host_Name);
     -- Put_Line("Adres:port = ("&Image(Address)&")");
@@ -119,7 +124,7 @@ package body Gate_Pack is
   task body Gate_Controller is
     Next : Ada.Calendar.Time;
     Shift : constant Duration := Duration ( Float (Opening_Duration_In_Sec) / Float (Axis_Max)); -- TODO
-    Iter : Natural; -- TODO
+    Iter : Integer;
     S : State;
   begin
     loop
@@ -138,7 +143,7 @@ package body Gate_Pack is
             Gate.Set_State(Opened);
             Pause_Gate_Controller.Opened_Pause;
             exit;
-          elsif S = Opening_Paused then
+          elsif S /= Opening then
             exit;
           end if;
         end loop;
@@ -147,7 +152,7 @@ package body Gate_Pack is
         Next := Clock + Shift;
         loop
           delay until Next;
-          -- Put_Line("iter " & Iter'Img);
+          -- Put_Line("iter close gate" & Iter'Img);
           Gate.Get_State(S);
           Gate.Get_Axis(Iter);
           -- Put_Line("state " & S'Img);
@@ -156,7 +161,7 @@ package body Gate_Pack is
           if Iter <= 1 then -- TODO
             Gate.Set_State(Closed);
             exit;
-          elsif S = Closing_Paused or S = Opening then
+          elsif S /= Closing then
             exit;
           end if;
         end loop;
@@ -167,7 +172,6 @@ package body Gate_Pack is
   task body Pause_Gate_Controller is
     Next : Ada.Calendar.Time;
     Shift : constant Duration := 1.0; -- TODO
-    Duration_Of_Pause : Integer := 10; -- TODO
     S : State;
   begin
     loop
@@ -186,7 +190,10 @@ package body Gate_Pack is
             Gate.Set_State(Closing);
             Gate_Controller.Close_Gate;
             exit;
+          elsif S /= Opened then
+            exit;
           end if;
+          
         end loop;
       or
         accept Closing_Paused;
@@ -203,7 +210,7 @@ package body Gate_Pack is
             Gate.Set_State(Closing);
             Gate_Controller.Close_Gate;
             exit;
-          elsif S = Opening then
+          elsif S /= Closing_Paused then
             exit;
           end if;
         end loop;
@@ -218,9 +225,11 @@ package body Gate_Pack is
           -- Put_Line("state " & S'Img);
           Next := Next + Shift;
           Paused_Counter := Paused_Counter - 1;
-          if Paused_Counter <= 0 or S = Closing then
+          if Paused_Counter <= 0 then
             Gate.Set_State(Closing);
             Gate_Controller.Close_Gate;
+            exit;
+          elsif S /= Opening_Paused then
             exit;
           end if;
         end loop;
