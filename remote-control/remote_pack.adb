@@ -13,7 +13,7 @@ package body Remote_Pack is
     Socket  : Socket_Type;
     Channel : Stream_Access;
   begin
-    Address.Addr := Inet_Addr("192.168.8.113");
+    Address.Addr := Inet_Addr("192.168.1.27");
     Address.Port := 5876;
     loop
       select
