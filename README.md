@@ -10,4 +10,4 @@ Before running the `gate_panel` program be sure to set the `GATE_IP_ADDRESS` env
 > export GATE_IP_ADDRESS="192.168.1.101"
 ```
 
-> Note that you will only be able to send signal from the `remote` and `photocell` to `gate_panel` programs if they all are running on machines in the same network.
+> Note that you will only be able to send signal from the `remote` and `photocell` to `gate_panel` programs if they are all running on machines in the same network.
