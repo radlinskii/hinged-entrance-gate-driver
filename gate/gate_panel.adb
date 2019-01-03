@@ -53,7 +53,8 @@ procedure Gate_Panel is
       Screen.Clear;
       Screen.Print_XY(1,1,"+=========== The Gate ===========+");
       Screen.Print_XY(10, 3, "State: ");
-      Screen.Print_XY(10, 5, "Axis: ");
+      Screen.Print_XY(1, 5, "Left Axis: ");
+      Screen.Print_XY(16, 5, "Right Axis: ");
       Screen.Print_XY(10, 7, "Light: ");
       Screen.Print_XY(10, 9, "Timeout: ");
     end Background;
@@ -72,7 +73,8 @@ procedure Gate_Panel is
   Next : Ada.Calendar.Time;
   Shift : constant Duration := 1.0;
   Pause_Time : Integer;
-  Axis : Natural;
+  Axis_Right : Integer;
+  Axis_Left : Integer;
   Is_Light_On : Boolean := False;
 begin
   Screen.Configuration;
@@ -81,10 +83,12 @@ begin
   loop
     Screen.Background;
     Gate.Get_State(S);
-    Gate.Get_Axis(Axis);
+    Gate.Get_Axis_Right(Axis_Right);
+    Gate.Get_Axis_Left(Axis_Left);
     Gate.Get_Light(Is_Light_On);
     Screen.Print_XY(17, 3, S'Img, Atryb=>Negatyw);
-    Screen.Print_XY(17, 5, Axis'Img, Atryb=>Jasny);
+    Screen.Print_XY(11, 5, Axis_Left'Img, Atryb=>Jasny);
+    Screen.Print_XY(27, 5, Axis_Right'Img, Atryb=>Jasny);
     if Is_Light_On then
       Screen.Print_XY(17, 7, "On", Atryb=>Jasny);
     else

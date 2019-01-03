@@ -111,22 +111,22 @@ package body Gate_Pack is
       S := Gate_State;
     end Get_State;
 
-    procedure Get_Axis_Right(Right : out Integer)
+    procedure Get_Axis_Right(Right : out Integer) is
     begin
       Right := Axis_Right;
     end Get_Axis_Right;
 
-    procedure Get_Axis_Left(Left : out Integer)
+    procedure Get_Axis_Left(Left : out Integer) is
     begin
       Left := Axis_Left;
     end Get_Axis_Left;
 
-    procedure Set_Axis_Left(Left : in Integer)
+    procedure Set_Axis_Left(Left : in Integer) is
     begin
      Axis_Left := Left;
     end Set_Axis_Left;
 
-    procedure Set_Axis_Right(Right : in Integer)
+    procedure Set_Axis_Right(Right : in Integer) is
     begin
      Axis_Right := Right;
     end Set_Axis_Right;
@@ -145,7 +145,8 @@ package body Gate_Pack is
   task body Gate_Controller is
     Next : Ada.Calendar.Time;
     Shift : constant Duration := Duration ( Float (Opening_Duration_In_Sec) / Float (Axis_Max)); -- TODO
-    Iter : Integer;
+    Axis_Right : Integer;
+    Axis_Left : Integer;
     S : State;
   begin
     loop
@@ -153,44 +154,64 @@ package body Gate_Pack is
         accept Open_Gate;
         Next := Clock + Shift;
         loop
-          Gate.Set_Light(True);
           delay until Next;
-          -- Put_Line("iter " & Iter'Img);
+
           Gate.Get_State(S);
-          Gate.Get_Axis(Iter);
-          -- Put_Line("state " & S'Img);
-          Next := Next + Shift;
-          Gate.Set_Axis(Iter + 1);
-          if Iter >= Axis_Max - 1 then
-            Gate.Set_State(Opened);
-            Pause_Gate_Controller.Opened_Pause;
-            Gate.Set_Light(False);
-            exit;
-          elsif S /= Opening then
+          if S /= Opening then
             Gate.Set_Light(False);
             exit;
           end if;
+
+          Gate.Set_Light(True);
+          Gate.Get_Axis_Right(Axis_Right);
+
+          if Axis_Right >= 20 then
+            Gate.Get_Axis_Left(Axis_Left);
+            if Axis_Left >= Axis_Max then
+              Gate.Set_State(Opened);
+              Pause_Gate_Controller.Opened_Pause;
+              Gate.Set_Light(False);
+              exit;
+            end if;
+            Gate.Set_Axis_Left(Axis_Left + 1);
+          end if;
+          
+          if Axis_Right < Axis_Max then
+            Gate.Set_Axis_Right(Axis_Right + 1);
+          end if;
+          
+          Next := Next + Shift;
         end loop;
       or
         accept Close_Gate;
         Next := Clock + Shift;
         loop
-          Gate.Set_Light(True);
           delay until Next;
-          -- Put_Line("iter close gate" & Iter'Img);
+          
           Gate.Get_State(S);
-          Gate.Get_Axis(Iter);
-          -- Put_Line("state " & S'Img);
-          Next := Next + Shift;
-          Gate.Set_Axis(Iter - 1);
-          if Iter <= 1 then
-            Gate.Set_State(Closed);
-            Gate.Set_Light(False);
-            exit;
-          elsif S /= Closing then
+          if S /= Closing then
             Gate.Set_Light(False);
             exit;
           end if;
+
+          Gate.Set_Light(True);
+          Gate.Get_Axis_Left(Axis_Left);
+          
+          if Axis_Left <= 70 then 
+            Gate.Get_Axis_Right(Axis_Right);
+            if Axis_Right <= 0 then
+              Gate.Set_State(Closed);
+              Gate.Set_Light(False);
+              exit;
+            end if;
+            Gate.Set_Axis_Right(Axis_Right - 1);
+          end if;
+          
+          
+          if Axis_Left > 0 then
+            Gate.Set_Axis_Left(Axis_Left - 1);
+          end if;
+          Next := Next + Shift;
         end loop;
       end select;
     end loop;
