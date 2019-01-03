@@ -11,23 +11,19 @@ use Ada.Strings.Fixed;
 
 procedure Remote_Panel is
 
-  type Attributes is (Clean);
-
   protected Screen  is
-    procedure Print_XY(X,Y: Positive; S: String; Attribute : Attributes := Clean);
+    procedure Print_XY(X,Y: Positive; S: String);
     procedure Clear;
     procedure Background;
   end Screen;
 
   protected body Screen is
-    function Attribute_Fun(Attribute : Attributes) return String is
-      (case Attribute is when Clean => "0m");
 
     function Esc_XY(X,Y : Positive) return String is
       ( (ASCII.ESC & "[" & Trim(Y'Img,Both) & ";" & Trim(X'Img,Both) & "H") );
 
-    procedure Print_XY(X,Y: Positive; S: String; Attribute : Attributes := Clean) is
-      Before : String := ASCII.ESC & "[" & Attribute_Fun(Attribute);
+    procedure Print_XY(X,Y: Positive; S: String) is
+      Before : String := ASCII.ESC & "[0m";
     begin
       Put( Before);
       Put( Esc_XY(X,Y) & S);
