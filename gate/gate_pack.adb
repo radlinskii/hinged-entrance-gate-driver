@@ -119,6 +119,16 @@ package body Gate_Pack is
     begin
       Axis := A;
     end Set_Axis;
+
+    procedure Get_Light(L : out Boolean) is
+    begin
+      L := Light;
+    end Get_Light;
+
+    procedure Set_Light(L : in Boolean) is
+    begin
+      Light := L;
+    end Set_Light;
   end Gate;
 
   task body Gate_Controller is
@@ -132,6 +142,7 @@ package body Gate_Pack is
         accept Open_Gate;
         Next := Clock + Shift;
         loop
+          Gate.Set_Light(True);
           delay until Next;
           -- Put_Line("iter " & Iter'Img);
           Gate.Get_State(S);
@@ -142,8 +153,10 @@ package body Gate_Pack is
           if Iter >= Axis_Max - 1 then
             Gate.Set_State(Opened);
             Pause_Gate_Controller.Opened_Pause;
+            Gate.Set_Light(False);
             exit;
           elsif S /= Opening then
+            Gate.Set_Light(False);
             exit;
           end if;
         end loop;
@@ -151,6 +164,7 @@ package body Gate_Pack is
         accept Close_Gate;
         Next := Clock + Shift;
         loop
+          Gate.Set_Light(True);
           delay until Next;
           -- Put_Line("iter close gate" & Iter'Img);
           Gate.Get_State(S);
@@ -158,10 +172,12 @@ package body Gate_Pack is
           -- Put_Line("state " & S'Img);
           Next := Next + Shift;
           Gate.Set_Axis(Iter - 1);
-          if Iter <= 1 then -- TODO
+          if Iter <= 1 then
             Gate.Set_State(Closed);
+            Gate.Set_Light(False);
             exit;
           elsif S /= Closing then
+            Gate.Set_Light(False);
             exit;
           end if;
         end loop;
@@ -193,7 +209,7 @@ package body Gate_Pack is
           elsif S /= Opened then
             exit;
           end if;
-          
+
         end loop;
       or
         accept Closing_Paused;
