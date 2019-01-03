@@ -71,7 +71,7 @@ procedure Gate_Panel is
   pragma Priority (System.Priority'First);
   S : State;
   Next : Ada.Calendar.Time;
-  Shift : constant Duration := 1.0;
+  Shift : constant Duration := 0.25;
   Pause_Time : Integer;
   Axis_Right : Integer;
   Axis_Left : Integer;
