@@ -111,16 +111,25 @@ package body Gate_Pack is
       S := Gate_State;
     end Get_State;
 
-
-    procedure Get_Axis(A : out Integer) is
+    procedure Get_Axis_Right(Right : out Integer)
     begin
-      A := Axis;
-    end Get_Axis;
+      Right := Axis_Right;
+    end Get_Axis_Right;
 
-    procedure Set_Axis(A : in Integer) is
+    procedure Get_Axis_Left(Left : out Integer)
     begin
-      Axis := A;
-    end Set_Axis;
+      Left := Axis_Left;
+    end Get_Axis_Left;
+
+    procedure Set_Axis_Left(Left : in Integer)
+    begin
+     Axis_Left := Left;
+    end Set_Axis_Left;
+
+    procedure Set_Axis_Right(Right : in Integer)
+    begin
+     Axis_Right := Right;
+    end Set_Axis_Right;
 
     procedure Get_Light(L : out Boolean) is
     begin
