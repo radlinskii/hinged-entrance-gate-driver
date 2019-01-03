@@ -2,12 +2,11 @@ with System;
 
 package Gate_Pack is
 
-  Axis_Max : Natural := 90;
+  Axis_Max : constant Integer := 90;
+  Opening_Duration_In_Sec : constant Positive := 8;
 
   Paused_Counter : Integer := 0 with Atomic;
   Duration_Of_Pause : Integer := 20;
-
-  Opening_Duration_In_Sec : Natural := 8;
 
   type State is (Closed, Opened, Closing, Opening, Closing_Paused, Opening_Paused);
 
@@ -29,8 +28,8 @@ package Gate_Pack is
 
     private
       Gate_State : State := Closed;
-      Axis_Right : Natural := 0;
-      Axis_Left : Natural := 0;
+      Axis_Right : Integer := 0;
+      Axis_Left : Integer := 0;
       Light : Boolean := False;
   end Gate;
 
