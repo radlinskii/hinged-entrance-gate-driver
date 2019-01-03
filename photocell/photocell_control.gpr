@@ -12,6 +12,6 @@ project Photocell_Control is
       for Default_Switches ("ada") use ("-g");
    end Compiler;
 
-   for Main use ("photocell.adb");
+   for Main use ("photocell_panel.adb");
 
 end Photocell_Control;

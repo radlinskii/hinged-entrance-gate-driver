@@ -12,6 +12,6 @@ project Remote_Control is
       for Default_Switches ("ada") use ("-g");
    end Compiler;
 
-   for Main use ("remote.adb");
+   for Main use ("remote_panel.adb");
 
 end Remote_Control;
