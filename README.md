@@ -4,8 +4,7 @@ Project for AGH UST's  Concurrent and Distributed Programming course.
 
 ## Development
 
-Before running the `gate_panel` program be sure to set the `GATE_IP_ADDRESS` environmental variable to your local IP address.<br>
-Also, before running the`remote` or `photocell` programs you have to set the `GATE_IP_ADDRESS` variable to whatever IP address the `gate_panel` program is running at the time.
+Before running the `gate_panel` program be sure to set the `GATE_IP_ADDRESS` environmental variable to your local IP address. Also, before running the`remote` or `photocell` programs you have to set the `GATE_IP_ADDRESS` variable to whatever IP address the `gate_panel` program is running at the time.
 
 ```bash
 > export GATE_IP_ADDRESS="192.168.1.101"
