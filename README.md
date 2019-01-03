@@ -23,4 +23,4 @@ To build each package, use one of the following commands:
 > gnatmake -P photocell_control.gpr # photocell package
 ```
 
-To run, use: `gate/gate_panel`, `remote-controll/remote` or `photocell/photocell`
+To run, use: `gate/gate_panel`, `remote-control/remote` or `photocell/photocell`
