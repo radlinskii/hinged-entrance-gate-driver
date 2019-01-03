@@ -13,12 +13,15 @@ Before running the `gate_panel` program be sure to set the `GATE_IP_ADDRESS` env
 > Note that you will only be able to send signal from the `remote` and `photocell` to `gate_panel` programs if they are all running on machines in the same network.
 
 To build each package, use one of the following commands:
+
 ```bash
 > gnatmake -P gate_controller.gpr # gate package
 ```
+
 ```bash
 > gnatmake -P remote_control.gpr # remote package
 ```
+
 ```bash
 > gnatmake -P photocell_control.gpr # photocell package
 ```
