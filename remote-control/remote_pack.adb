@@ -5,6 +5,8 @@ use Ada.Exceptions;
 with GNAT.Sockets; use GNAT.Sockets;
 with Ada.Calendar;
 use Ada.Calendar;
+with Ada.Environment_Variables;
+use Ada.Environment_Variables;
 
 package body Remote_Pack is
 
@@ -13,7 +15,7 @@ package body Remote_Pack is
     Socket  : Socket_Type;
     Channel : Stream_Access;
   begin
-    Address.Addr := Inet_Addr("192.168.1.27");
+    Address.Addr := Inet_Addr(Value("GATE_IP_ADDRESS"));
     Address.Port := 5876;
     loop
       select
