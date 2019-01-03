@@ -22,9 +22,13 @@ package Gate_Pack is
     procedure Get_Axis(A : out Integer);
     procedure Set_Axis(A : in Integer);
 
+    procedure Get_Light(L : out Boolean);
+    procedure Set_Light(L : in Boolean);
+
     private
       Gate_State : State := Closed;
       Axis : Natural := 0;
+      Light : Boolean := False;
   end Gate;
 
   task Signal_Controller is
