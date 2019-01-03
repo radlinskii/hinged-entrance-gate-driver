@@ -2,18 +2,17 @@ with System;
 
 package Gate_Pack is
 
-  Axis_Max : Natural := 90;
+  Axis_Max : constant Integer := 90;
+  Opening_Duration_In_Sec : constant Positive := 8;
 
-  Paused_Counter : Integer := 0 with Atomic;
-  Duration_Of_Pause : Integer := 20;
-
-  Opening_Duration_In_Sec : Natural := 8;
+  Timeout : Integer := 0 with Atomic;
+  Timeout_Duration : Integer := 20;
 
   type State is (Closed, Opened, Closing, Opening, Closing_Paused, Opening_Paused);
 
-  task Gate_Control is
-   entry Gate_Control_Start(Pause_Duration : Integer);
-  end Gate_Control;
+  task Gate_Controller is
+   entry Start(Timeout_Duration_Input : Integer);
+  end Gate_Controller;
 
   protected Gate is
     procedure Get_State(S : out State);
@@ -29,25 +28,25 @@ package Gate_Pack is
 
     private
       Gate_State : State := Closed;
-      Axis_Right : Natural := 0;
-      Axis_Left : Natural := 0;
+      Axis_Right : Integer := 0;
+      Axis_Left : Integer := 0;
       Light : Boolean := False;
   end Gate;
 
-  task Signal_Controller is
-    entry Remote_Signal;
-    entry Photocell_Signal;
-  end Signal_Controller;
+  task Signal_Handler is
+    entry Remote;
+    entry Photocell;
+  end Signal_Handler;
 
-  task Gate_Controller is
+  task Axis_Handler is
     entry Open_Gate;
     entry Close_Gate;
-  end Gate_Controller;
+  end Axis_Handler;
 
-  task Pause_Gate_Controller is
-    entry Opened_Pause;
-    entry Closing_Paused;
-    entry Opening_Paused;
-  end Pause_Gate_Controller;
+  task Timeout_Handler is
+    entry Wait_On_Opened;
+    entry Wait_On_Closing_Paused;
+    entry Wait_On_Opening_Paused;
+  end Timeout_Handler;
 
 end Gate_Pack;

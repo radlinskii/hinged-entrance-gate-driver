@@ -1,4 +1,4 @@
-project Gate_Controller is
+project Remote_Control is
 
    package Linker is
       for Default_Switches ("ada") use ("-g");
@@ -12,7 +12,6 @@ project Gate_Controller is
       for Default_Switches ("ada") use ("-g");
    end Compiler;
 
-   for Main use ("gate_panel.adb");
+   for Main use ("remote_panel.adb");
 
-end Gate_Controller;
-
+end Remote_Control;
