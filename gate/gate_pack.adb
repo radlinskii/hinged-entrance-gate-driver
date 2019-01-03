@@ -6,6 +6,8 @@ with Ada.Calendar;
 use Ada.Calendar;
 with GNAT.Sockets;
 use GNAT.Sockets;
+with Ada.Environment_Variables;
+use Ada.Environment_Variables;
 
 package body Gate_Pack is
   task body Signal_Controller is
@@ -71,7 +73,7 @@ package body Gate_Pack is
     end Gate_Control_Start;
     -- Put_Line(Duration_Of_Pause'Img);
     Gate.Get_State(Gate_State);
-    Address.Addr := Inet_Addr("192.168.1.27");
+    Address.Addr := Inet_Addr(Value("GATE_IP_ADDRESS"));
     Address.Port := 5876;
     -- Put_Line("Host: "&Host_Name);
     -- Put_Line("Adres:port = ("&Image(Address)&")");

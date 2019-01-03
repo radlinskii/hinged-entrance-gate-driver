@@ -5,6 +5,8 @@ use Ada.Exceptions;
 with GNAT.Sockets; use GNAT.Sockets;
 with Ada.Calendar;
 use Ada.Calendar;
+with Ada.Environment_Variables;
+use Ada.Environment_Variables;
 
 package body Photocell_Pack is
 
@@ -13,10 +15,10 @@ package body Photocell_Pack is
     Socket  : Socket_Type;
     Channel : Stream_Access;
   begin
-    Address.Addr := Inet_Addr("192.168.1.27");
+    Address.Addr := Inet_Addr(Value("GATE_IP_ADDRESS"));
     Address.Port := 5876;
     loop
-      select 
+      select
         accept Send_Signal;
         Create_Socket (Socket);
         Set_Socket_Option (Socket, Socket_Level, (Reuse_Address, True));
@@ -24,7 +26,7 @@ package body Photocell_Pack is
         Channel := Stream (Socket);
         Integer'Output (Channel, 0);
         Close_Socket(Socket);
-      or 
+      or
         accept Quit;
         exit;
       end select;
