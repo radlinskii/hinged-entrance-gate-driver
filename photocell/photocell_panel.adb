@@ -11,26 +11,23 @@ use Ada.Strings.Fixed;
 
 procedure Photocell_Panel is
 
-  type Atrybuty is (Czysty, Jasny, Podkreslony, Negatyw, Migajacy, Szary);
+  type Attributes is (Clean);
 
   protected Screen  is
-    procedure Print_XY(X,Y: Positive; S: String; Atryb : Atrybuty := Czysty);
+    procedure Print_XY(X,Y: Positive; S: String; Attribute : Attributes := Clean);
     procedure Clear;
     procedure Background;
   end Screen;
 
   protected body Screen is
-    -- implementacja dla Linuxa i macOSX
-    function Atryb_Fun(Atryb : Atrybuty) return String is
-      (case Atryb is
-       when Jasny => "1m", when Podkreslony => "4m", when Negatyw => "7m",
-       when Migajacy => "5m", when Szary => "2m", when Czysty => "0m");
+    function Attribute_Fun(Attribute : Attributes) return String is
+      (case Attribute is when Clean => "0m");
 
     function Esc_XY(X,Y : Positive) return String is
       ( (ASCII.ESC & "[" & Trim(Y'Img,Both) & ";" & Trim(X'Img,Both) & "H") );
 
-    procedure Print_XY(X,Y: Positive; S: String; Atryb : Atrybuty := Czysty) is
-      Before : String := ASCII.ESC & "[" & Atryb_Fun(Atryb);
+    procedure Print_XY(X,Y: Positive; S: String; Attribute : Attributes := Clean) is
+      Before : String := ASCII.ESC & "[" & Attribute_Fun(Attribute);
     begin
       Put( Before);
       Put( Esc_XY(X,Y) & S);
