@@ -19,15 +19,18 @@ package Gate_Pack is
     procedure Get_State(S : out State);
     procedure Set_State(S : in State);
 
-    procedure Get_Axis(A : out Integer);
-    procedure Set_Axis(A : in Integer);
+    procedure Get_Axis_Right(Right : out Integer);
+    procedure Get_Axis_Left(Left : out Integer);
+    procedure Set_Axis_Left(Left : in Integer);
+    procedure Set_Axis_Right(Right : in Integer);
 
     procedure Get_Light(L : out Boolean);
     procedure Set_Light(L : in Boolean);
 
     private
       Gate_State : State := Closed;
-      Axis : Natural := 0;
+      Axis_Right : Natural := 0;
+      Axis_Left : Natural := 0;
       Light : Boolean := False;
   end Gate;
 
