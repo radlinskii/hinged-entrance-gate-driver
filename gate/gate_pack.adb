@@ -15,7 +15,6 @@ package body Gate_Pack is
     procedure Set_State(S : in State) is
     begin
       Gate_State := S;
-      -- Put_Line("new state: " & Gate_State'Img);
     end Set_State;
 
     procedure Get_State(S : out State) is
@@ -66,12 +65,9 @@ task body Gate_Controller is
         Timeout_Duration := Timeout_Duration_Input;
         Timeout := Timeout_Duration_Input;
     end Start;
-    -- Put_Line(Timeout_Duration'Img);
     Gate.Get_State(Gate_State);
     Address.Addr := Inet_Addr(Value("GATE_IP_ADDRESS"));
     Address.Port := 5876;
-    -- Put_Line("Host: "&Host_Name);
-    -- Put_Line("Adres:port = ("&Image(Address)&")");
     Create_Socket (Server);
     Set_Socket_Option (Server, Socket_Level, (Reuse_Address, True));
     Bind_Socket (Server, Address);
@@ -99,37 +95,29 @@ task body Gate_Controller is
     loop
       select
         accept Remote;
-        -- Put_Line("Signal_Handler.Remote");
         Gate.Get_State(Gate_State);
         case Gate_State is
           when Opened =>
-            -- Put_Line("Opened state");
             Gate.Set_State(Closing);
             Axis_Handler.Close_Gate;
           when Closed =>
-            -- Put_Line("Closed state");
             Gate.Set_State(Opening);
             Axis_Handler.Open_Gate;
           when Closing =>
-            -- Put_Line("Closing state");
             Gate.Set_State(Closing_Paused);
             Timeout_Handler.Wait_On_Closing_Paused;
           when Opening =>
-            -- Put_Line("Opening state");
             Gate.Set_State(Opening_Paused);
             Timeout_Handler.Wait_On_Opening_Paused;
           when Opening_Paused =>
-            -- Put_Line("Paused opening state");
             Gate.Set_State(Closing);
             Axis_Handler.Close_Gate;
           when Closing_Paused =>
-            -- Put_Line("Paused closing state");
             Gate.Set_State(Opening);
             Axis_Handler.Open_Gate;
         end case;
       or
         accept Photocell;
-        -- Put_Line("Signal_Handler.Photocell");
         Gate.Get_State(Gate_State);
         case Gate_State is
           when Opened =>
@@ -151,7 +139,7 @@ task body Gate_Controller is
 
   task body Axis_Handler is
     Next : Ada.Calendar.Time;
-    Shift : constant Duration := Duration ( Float (Opening_Duration_In_Sec) / Float (Axis_Max)); -- TODO
+    Shift : constant Duration := Duration ( Float (Opening_Duration_In_Sec) / Float (Axis_Max));
     Axis_Right : Integer;
     Axis_Left : Integer;
     S : State;
@@ -214,10 +202,10 @@ task body Gate_Controller is
             Gate.Set_Axis_Right(Axis_Right - 1);
           end if;
 
-
           if Axis_Left > 0 then
             Gate.Set_Axis_Left(Axis_Left - 1);
           end if;
+
           Next := Next + Shift;
         end loop;
       end select;
@@ -238,8 +226,6 @@ task body Gate_Controller is
         loop
           delay until Next;
           Gate.Get_State(S);
-          -- Put_Line("iter " & Timeout'Img);
-          -- Put_Line("state " & S'Img);
           Next := Next + Shift;
           Timeout := Timeout - 1;
           if Timeout <= 0 then
@@ -249,7 +235,6 @@ task body Gate_Controller is
           elsif S /= Opened then
             exit;
           end if;
-
         end loop;
       or
         accept Wait_On_Closing_Paused;
@@ -258,8 +243,6 @@ task body Gate_Controller is
         loop
           delay until Next;
           Gate.Get_State(S);
-          -- Put_Line("iter " & Timeout'Img);
-          -- Put_Line("state " & S'Img);
           Next := Next + Shift;
           Timeout := Timeout - 1;
           if Timeout <= 0 then
@@ -277,8 +260,6 @@ task body Gate_Controller is
         loop
           delay until Next;
           Gate.Get_State(S);
-          -- Put_Line("iter " & Timeout'Img);
-          -- Put_Line("state " & S'Img);
           Next := Next + Shift;
           Timeout := Timeout - 1;
           if Timeout <= 0 then

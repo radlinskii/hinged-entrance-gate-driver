@@ -35,7 +35,7 @@ package body Photocell_Pack is
   exception
     when E:others =>
       Close_Socket (Socket);
-      Put_Line("Error: Task Photocell");
+      Put_Line("Error: Photocell");
       Put_Line(Exception_Name (E) & ": " & Exception_Message (E));
   end Photocell_Task;
 
