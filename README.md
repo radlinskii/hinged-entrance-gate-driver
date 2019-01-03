@@ -15,7 +15,7 @@ Before running the `gate_panel` program be sure to set the `GATE_IP_ADDRESS` env
 To build each package, use one of the following commands:
 
 ```bash
-> gnatmake -P gate_controller.gpr # gate package
+> gnatmake -P gate_control.gpr # gate package
 ```
 
 ```bash

@@ -69,14 +69,14 @@ procedure Gate_Panel is
   S : State;
   Next : Ada.Calendar.Time;
   Shift : constant Duration := 0.25;
-  Pause_Time : Integer;
+  Timeout_Duration_Input : Integer;
   Axis_Right : Integer;
   Axis_Left : Integer;
   Is_Light_On : Boolean := False;
 begin
   Screen.Configuration;
-  Ada.Integer_Text_IO.Get(Pause_Time);
-  Gate_Control.Gate_Control_Start(Pause_Time);
+  Ada.Integer_Text_IO.Get(Timeout_Duration_Input);
+  Gate_Controller.Start(Timeout_Duration_Input);
   loop
     Screen.Background;
     Gate.Get_State(S);
@@ -91,7 +91,7 @@ begin
     else
       Screen.Print_XY(17, 7, "Off", Attribute=>Bright);
     end if;
-    Screen.Print_XY(20, 9, Gate_Pack.Paused_Counter'Img, Attribute=>Underlined);
+    Screen.Print_XY(20, 9, Gate_Pack.Timeout'Img, Attribute=>Underlined);
     Next := Clock + Shift;
     delay until Next;
   end loop;
