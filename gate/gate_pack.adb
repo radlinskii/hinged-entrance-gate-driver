@@ -48,13 +48,19 @@ package body Gate_Pack is
         accept Photocell_Signal;
         -- Put_Line("Signal_Controller.Photocell_Signal");
         Gate.Get_State(Gate_State);
-        if Gate_State = Closing then
-          Gate.Set_State(Opening);
-          Gate_Controller.Open_Gate;
-        elsif Gate_State = Opened then
-          Gate.Set_State(Opened);
-          Paused_Counter := Duration_Of_Pause;
-        end if;
+        case Gate_State is
+          when Opened =>
+            Gate.Set_State(Opened);
+            Paused_Counter := Duration_Of_Pause;
+          when Closing =>
+            Gate.Set_State(Opening);
+            Gate_Controller.Open_Gate;
+          when Opening_Paused =>
+            Paused_Counter := Duration_Of_Pause;
+          when Closing_Paused =>
+            Paused_Counter := Duration_Of_Pause;
+          when others => null;
+        end case;
       end select;
     end loop;
   end Signal_Controller;
@@ -175,11 +181,11 @@ package body Gate_Pack is
             end if;
             Gate.Set_Axis_Left(Axis_Left + 1);
           end if;
-          
+
           if Axis_Right < Axis_Max then
             Gate.Set_Axis_Right(Axis_Right + 1);
           end if;
-          
+
           Next := Next + Shift;
         end loop;
       or
@@ -187,7 +193,7 @@ package body Gate_Pack is
         Next := Clock + Shift;
         loop
           delay until Next;
-          
+
           Gate.Get_State(S);
           if S /= Closing then
             Gate.Set_Light(False);
@@ -196,8 +202,8 @@ package body Gate_Pack is
 
           Gate.Set_Light(True);
           Gate.Get_Axis_Left(Axis_Left);
-          
-          if Axis_Left <= 70 then 
+
+          if Axis_Left <= 70 then
             Gate.Get_Axis_Right(Axis_Right);
             if Axis_Right <= 0 then
               Gate.Set_State(Closed);
@@ -206,8 +212,8 @@ package body Gate_Pack is
             end if;
             Gate.Set_Axis_Right(Axis_Right - 1);
           end if;
-          
-          
+
+
           if Axis_Left > 0 then
             Gate.Set_Axis_Left(Axis_Left - 1);
           end if;
