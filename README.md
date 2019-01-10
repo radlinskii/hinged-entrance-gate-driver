@@ -15,15 +15,15 @@ Before running the `gate_panel` program be sure to set the `GATE_IP_ADDRESS` env
 To build each package, use one of the following commands:
 
 ```bash
-> gnatmake -P gate_control.gpr # gate package
+> gnatmake -P gate/gate_control.gpr # gate package
 ```
 
 ```bash
-> gnatmake -P remote_control.gpr # remote package
+> gnatmake -P remote/remote_control.gpr # remote package
 ```
 
 ```bash
-> gnatmake -P photocell_control.gpr # photocell package
+> gnatmake -P photocell/photocell_control.gpr # photocell package
 ```
 
 To run, use: `gate/gate_panel`, `remote/remote_panel` or `photocell/photocell_panel`
