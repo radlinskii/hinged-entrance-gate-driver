@@ -134,6 +134,10 @@ task body Gate_Controller is
         end case;
       end select;
     end loop;
+  exception
+    when E : others =>
+      Put_Line("Error: Signal_Handler");
+      Put_Line(Exception_Name (E) & ": " & Exception_Message (E));
   end Signal_Handler;
 
 
@@ -210,6 +214,10 @@ task body Gate_Controller is
         end loop;
       end select;
     end loop;
+  exception
+    when E : others =>
+      Put_Line("Error: Axis_Handler");
+      Put_Line(Exception_Name (E) & ": " & Exception_Message (E));
   end Axis_Handler;
 
 
@@ -272,6 +280,9 @@ task body Gate_Controller is
         end loop;
       end select;
     end loop;
+  exception
+    when E : others =>
+      Put_Line("Error: Timeout_Handler");
+      Put_Line(Exception_Name (E) & ": " & Exception_Message (E));
   end Timeout_Handler;
-
 end Gate_Pack;
