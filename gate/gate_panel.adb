@@ -14,7 +14,20 @@ use Ada.Calendar;
 
 with Ada.Text_IO, Ada.Integer_Text_IO;
 
+with Ada.Strings.Unbounded;
+with Ada.Text_IO.Unbounded_IO;
+
 procedure Gate_Panel is
+
+  function Is_Numeric (Item : in String) return Boolean is
+      Dummy : Positive;
+   begin
+      Dummy := Positive'Value (Item);
+      return True;
+   exception
+      when others =>
+         return False;
+   end Is_Numeric;
 
   type Attributes is (Clean, Bright, Underlined, Negative);
 
@@ -72,10 +85,17 @@ procedure Gate_Panel is
   Timeout_Duration_Input : Integer;
   Axis_Right : Integer;
   Axis_Left : Integer;
+
+  Timeout_Duration_Input_String : Ada.Strings.Unbounded.Unbounded_String;
   Is_Light_On : Boolean := False;
 begin
   Screen.Configuration;
-  Ada.Integer_Text_IO.Get(Timeout_Duration_Input);
+  
+  while not Is_Numeric(Ada.Strings.Unbounded.To_String(Timeout_Duration_Input_String)) loop 
+    Timeout_Duration_Input_String := Ada.Strings.Unbounded.To_Unbounded_String(Ada.Text_IO.Get_Line);
+    Screen.Configuration;
+  end loop;
+  Timeout_Duration_Input := Integer'Value (Ada.Strings.Unbounded.To_String(Timeout_Duration_Input_String));
   Gate_Controller.Start(Timeout_Duration_Input);
   loop
     Screen.Background;
